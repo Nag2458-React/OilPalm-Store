@@ -1,0 +1,22 @@
+oil-palm-store
+│
+├── public
+│   └── images
+│       ├── logo.png
+│       ├── bottle-1l.png
+│       └── bottle-kit.png
+│
+├── src
+│   ├── components
+│   │   ├── Navbar.jsx
+│   │   ├── Hero.jsx
+│   │   ├── Products.jsx
+│   │   ├── About.jsx
+│   │   ├── HowToOrder.jsx
+│   │   └── Footer.jsx
+│   │
+│   ├── App.jsx
+│   ├── App.css
+│   └── main.jsx
+│
+└── package.json

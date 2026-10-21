@@ -1,0 +1,201 @@
+   body {
+      background: #f4f7f5;
+      font-family: Arial, sans-serif;
+    }
+
+    .dashboard {
+      padding: 35px 0;
+    }
+
+    .dashboard-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #183b2a;
+    }
+
+    .dashboard-subtitle {
+      color: #7b887f;
+      font-size: 14px;
+    }
+
+ .stat-card {
+    display: block;
+    width: 100%;
+    min-height: 187px;
+    padding: 10px;
+    border: 1px solid transparent;
+    border-radius: 18px;
+    text-align: left;
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      font-size: 23px;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 15px;
+      line-height: 1.2;
+    }
+
+    .stat-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-top: 7px;
+    }
+
+    .stat-description {
+      font-size: 12px;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+
+    .stat-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid currentColor;
+      padding-top: 11px;
+      margin-top: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+
+    /* Green */
+    .card-green {
+      background: #e7f7ed;
+      color: #176438;
+    }
+    .card-green .stat-icon {
+      background: #c9efd6;
+    }
+
+    /* Blue */
+    .card-blue {
+      background: #eaf1ff;
+      color: #2454b8;
+    }
+    .card-blue .stat-icon {
+      background: #d2e1ff;
+    }
+
+    /* Orange */
+    .card-orange {
+      background: #fff3df;
+      color: #99520c;
+    }
+    .card-orange .stat-icon {
+      background: #ffe2b2;
+    }
+
+    /* Purple */
+    .card-purple {
+      background: #f2eaff;
+      color: #7040a8;
+    }
+    .card-purple .stat-icon {
+      background: #e2d2ff;
+    }
+
+    /* Red */
+    .card-red {
+      background: #ffeded;
+      color: #b52b32;
+    }
+    .card-red .stat-icon {
+      background: #ffd6d8;
+    }
+
+    /* Teal */
+    .card-teal {
+      background: #e1f6f3;
+      color: #11766b;
+    }
+    .card-teal .stat-icon {
+      background: #bcebe3;
+    }
+
+    @media (max-width: 576px) {
+      .dashboard {
+        padding: 22px 0;
+      }
+
+      .dashboard-title {
+        font-size: 23px;
+      }
+
+      .stat-card {
+        min-height: 185px;
+      }
+    }
+
+
+
+
+     .form-section {
+    background: #ffffff;
+    border: 1px solid #e8eee9;
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .section-title {
+    color: #176b3a;
+    font-size: 15px;
+    font-weight: 700;
+    padding-bottom: 13px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #edf1ed;
+  }
+
+  #newFarmerModal .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #37483d;
+  }
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+    height: 400px;
+}
+  #newFarmerModal .form-control,
+  #newFarmerModal .form-select {
+    min-height: 43px;
+    border-color: #dce5de;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  #newFarmerModal textarea.form-control {
+    min-height: auto;
+  }
+
+  #newFarmerModal .form-control:focus,
+  #newFarmerModal .form-select:focus {
+    border-color: #239653;
+    box-shadow: 0 0 0 0.2rem rgba(35, 150, 83, 0.12);
+  }
+
+  @media (max-width: 576px) {
+    #newFarmerModal .modal-body {
+      padding: 15px !important;
+    }
+
+    #newFarmerModal .form-section {
+      padding: 14px;
+    }
+  }
