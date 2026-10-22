@@ -1,16 +1,16 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Home } from "./pages/Home";
+import { Rythulu } from "./pages/Rythulu";
 import './App.css'
-import { Home } from './pages/Home'
-
 function App() {
   return (
-    <div className="oil-palm-app align-items-center" style={{textAlign:"center"}}>
-      <Home />
-
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/rythulu" element={<Rythulu />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-
-
-
-export default App
+export default App;

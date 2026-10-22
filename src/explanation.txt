@@ -1,0 +1,157 @@
+
+import React from "react";
+
+దీన్ని ఇలా మార్చు:
+
+import React, { useState } from "react";
+1.2 — Home component లో state add చేయి
+
+export const Home = () => { తర్వాత ఈ line add చేయి:
+
+const [totalRythulu, setTotalRythulu] = useState(248);
+
+ఇది ఏం చేస్తుంది?
+
+totalRythulu — ప్రస్తుతం ఉన్న farmer count.
+
+setTotalRythulu — count మార్చడానికి ఉపయోగిస్తాం.
+
+useState(248) — మొదట count 248 అని చూపిస్తుంది.
+
+1.3 — Total Rythulu box లో number మార్చు
+
+నీ మొదటి card లో ప్రస్తుతం:
+
+<div className="stat-number">248</div>
+
+దీన్ని ఇలా మార్చు:
+
+<div className="stat-number">{totalRythulu}</div>
+
+ఇప్పుడు state మారినప్పుడల్లా box లో number automatic గా update అవుతుంది.
+
+
+Step 2.1 — Home.jsx లో function create చేయి
+
+నీ Home.jsx లో ఈ state ఇప్పటికే ఉంది:
+
+const [totalRythulu, setTotalRythulu] = useState(248);
+
+దాని కింద ఈ function add చేయి:
+
+const handleSaveRythu = () => {
+  setTotalRythulu((prev) => prev + 1);
+};
+
+ఇది ఏం చేస్తుంది?
+
+prev అంటే ప్రస్తుతం ఉన్న count.
+
+prev + 1 అంటే ఒకటి పెంచడం.
+
+248 ఉంటే 249 అవుతుంది.
+
+Step 2.2 — NewRythu component కి function పంపించు
+
+Home.jsx చివర్లో ప్రస్తుతం ఇలా ఉంటుంది:
+
+<NewRythu />
+
+దీన్ని ఇలా మార్చు:
+
+<NewRythu onSaveRythu={handleSaveRythu} />
+
+ఇప్పుడు NewRythu component ఈ function ని ఉపయోగించగలదు.
+
+Step 2.3 — NewRythu.jsx లో function receive చేయి
+
+నీ NewRythu.jsx లో ఈ line:
+
+export const NewRythu = () => {
+
+దీన్ని ఇలా మార్చు:
+
+export const NewRythu = ({ onSaveRythu }) => {
+
+ఇంతవరకు function ని పంపించాం, receive చేశాం. ఇంకా button click కి connect చేయలేదు.
+
+ఈ మూడు changes చేసి done అని చెప్పు. తర్వాతి step లో form submit అయినప్పుడు count పెరగడం, modal close అవడం ఎలా చేయాలో చూద్దాం.
+
+Super! 👍 ఇప్పుడు Step 3: Save Rythu button click చేసినప్పుడు count పెరగాలి. అలాగే form submit అయిన తర్వాత modal close అవ్వాలి.
+
+Step 3.1 — NewRythu.jsx లో handleSubmit function add చేయి
+
+నీ NewRythu.jsx లో ప్రస్తుతం:
+
+export const NewRythu = ({ onSaveRythu }) => {
+  return (
+
+దీన్ని ఇలా మార్చు:
+
+export const NewRythu = ({ onSaveRythu }) => {
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    onSaveRythu();
+
+    e.target.reset();
+
+    const modalElement = document.getElementById("newFarmerModal");
+    const modal = window.bootstrap.Modal.getInstance(modalElement);
+
+    if (modal) {
+      modal.hide();
+    }
+  };
+
+  return (
+
+ఈ function ఏం చేస్తుంది?
+
+e.preventDefault() — form submit అయినప్పుడు page refresh కాకుండా ఆపుతుంది.
+
+onSaveRythu() — Total Rythulu count ఒకటి పెంచుతుంది.
+
+e.target.reset() — form fields clear చేస్తుంది.
+
+modal.hide() — registration modal close చేస్తుంది.
+
+Step 3.2 — Form కి onSubmit connect చేయి
+
+నీ code లో ప్రస్తుతం:
+
+<form>
+
+దీన్ని ఇలా మార్చు:
+
+<form onSubmit={handleSubmit}>
+
+అంతే! మిగతా form fields మార్చాల్సిన అవసరం లేదు.
+
+Step 3.3 — Test చేయి
+
+Website లో New Rythu click చేయి.
+
+Required fields అన్నీ fill చేయి.
+
+Save Rythu click చేయి.
+
+Total Rythulu count 248 నుంచి 249 అవుతుందో చూడు.
+
+గమనిక: ఇది ప్రస్తుతం frontend లో మాత్రమే count పెంచుతుంది. Page refresh చేస్తే మళ్లీ 248 అవుతుంది; farmer details database లో save కావు. తర్వాతి దశలో MySQL/API కి connect చేసి permanent గా save చేద్దాం.
+
+
+import React, { useState } from "react";
+import { db } from "../firebase/firebase";
+import { collection, addDoc } from "firebase/firestore";
+
+Ee code enduku?
+
+useState — Save button loading state kosam.
+
+db — Mana Firebase database connection.
+
+collection — Firestore lo rythulu collection ni select cheyyadaniki.
+
+addDoc — Kotha Rythu record save cheyyadaniki.

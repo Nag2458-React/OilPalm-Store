@@ -1,9 +1,38 @@
+import React, { useState } from "react";
+import { db } from "../firebase/firebase";
+import { collection, addDoc } from "firebase/firestore";
 
-import React from "react";
+export const NewRythu = ({onSaveRythu}) => {
+    const [loading, setLoading] = useState(false);
 
-export const NewRythu = () => {
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const form = e.currentTarget;
+  const data = Object.fromEntries(new FormData(form).entries());
+
+  try {
+    setLoading(true);
+
+    await addDoc(collection(db, "rythulu"), data);
+
+    alert("Rythu data saved successfully!");
+
+    form.reset();
+
+    const modalElement = document.getElementById("newFarmerModal");
+    window.bootstrap?.Modal.getInstance(modalElement)?.hide();
+
+    onSaveRythu?.();
+  } catch (error) {
+    console.error("Firebase error:", error);
+    alert("Save failed: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
   return (
-    <div
+     <div
       className="modal fade"
       id="newFarmerModal"
       tabIndex="-1"
@@ -12,7 +41,6 @@ export const NewRythu = () => {
     >
       <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div className="modal-content">
-
           <div className="modal-header bg-success text-white">
             <div>
               <h5 className="modal-title" id="newFarmerModalLabel">
@@ -30,9 +58,8 @@ export const NewRythu = () => {
             ></button>
           </div>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="modal-body p-4">
-
               <h6 className="text-success fw-bold mb-3">
                 <i className="bi bi-person-fill me-2"></i>
                 Personal Details
@@ -42,6 +69,7 @@ export const NewRythu = () => {
                 <div className="col-md-4">
                   <label className="form-label">Rythu Name *</label>
                   <input
+                    name="rythuName"
                     type="text"
                     className="form-control"
                     placeholder="Enter farmer name"
@@ -52,22 +80,62 @@ export const NewRythu = () => {
                 <div className="col-md-4">
                   <label className="form-label">Farm Name *</label>
                   <input
+                    name="farmName"
                     type="text"
                     className="form-control"
                     placeholder="Enter name"
+                    required
                   />
                 </div>
+
                 <div className="col-md-4">
                   <label className="form-label">How Many Acres *</label>
                   <input
-                    type="text"
+                    name="acres"
+                    type="number"
+                    min="0"
+                    step="0.01"
                     className="form-control"
-                    placeholder="Enter How Many Acres" required
+                    placeholder="Enter acres"
+                    required
                   />
+                </div>
+                
+                <div className="col-md-6">
+                  <label className="form-label">How Many 1 Littre Bottles</label>
+                  <select
+                    name="bottles"
+                    className="form-select"
+                    defaultValue=""
+                  >
+                    <option value="">Select Bottles</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                  </select>
+                </div>
+                
+                <div className="col-md-6">
+                  <label className="form-label">How Many Kits</label>
+                  <select
+                    name="kits"
+                    className="form-select"
+                    defaultValue=""
+                  >
+                    <option value="">Select state</option>
+                    <option>1 kIT</option>
+                    <option>2 KITS</option>
+                    <option>3 KITS</option>
+                    <option>4 KITS</option>
+                    <option>5 KITS</option>
+                  </select>
                 </div>
                 <div className="col-md-4">
                   <label className="form-label">Mobile Number *</label>
                   <input
+                    name="mobile"
                     type="tel"
                     className="form-control"
                     placeholder="Enter 10-digit mobile number"
@@ -80,18 +148,21 @@ export const NewRythu = () => {
                 <div className="col-md-4">
                   <label className="form-label">Alternate Mobile</label>
                   <input
+                    name="alternateMobile"
                     type="tel"
                     className="form-control"
                     placeholder="Optional"
                     maxLength="10"
+                    pattern="[6-9][0-9]{9}"
                   />
                 </div>
-                 <div className="col-md-4">
-                  <label className="form-label">Order Recieved Date *</label>
+
+                <div className="col-md-4">
+                  <label className="form-label">Order Received Date *</label>
                   <input
+                    name="orderReceivedDate"
                     type="date"
                     className="form-control"
-                    placeholder="Order Recieved Date"
                     required
                   />
                 </div>
@@ -108,6 +179,7 @@ export const NewRythu = () => {
                 <div className="col-md-4">
                   <label className="form-label">Village *</label>
                   <input
+                    name="village"
                     type="text"
                     className="form-control"
                     placeholder="Village"
@@ -118,6 +190,7 @@ export const NewRythu = () => {
                 <div className="col-md-4">
                   <label className="form-label">Mandal *</label>
                   <input
+                    name="mandal"
                     type="text"
                     className="form-control"
                     placeholder="Mandal"
@@ -128,6 +201,7 @@ export const NewRythu = () => {
                 <div className="col-md-4">
                   <label className="form-label">District *</label>
                   <input
+                    name="district"
                     type="text"
                     className="form-control"
                     placeholder="District"
@@ -137,7 +211,11 @@ export const NewRythu = () => {
 
                 <div className="col-md-6">
                   <label className="form-label">State</label>
-                  <select className="form-select" defaultValue="">
+                  <select
+                    name="state"
+                    className="form-select"
+                    defaultValue=""
+                  >
                     <option value="">Select state</option>
                     <option>Telangana</option>
                     <option>Andhra Pradesh</option>
@@ -150,6 +228,7 @@ export const NewRythu = () => {
                 <div className="col-md-6">
                   <label className="form-label">PIN Code</label>
                   <input
+                    name="pinCode"
                     type="text"
                     className="form-control"
                     placeholder="6-digit PIN code"
@@ -161,6 +240,7 @@ export const NewRythu = () => {
                 <div className="col-12">
                   <label className="form-label">Full Address</label>
                   <textarea
+                    name="fullAddress"
                     className="form-control"
                     rows="2"
                     placeholder="Enter full address"
@@ -178,7 +258,12 @@ export const NewRythu = () => {
               <div className="row g-3">
                 <div className="col-md-3">
                   <label className="form-label">Discussion Status</label>
-                  <select className="form-select" defaultValue="Not Contacted">
+                  <select
+                    name="discussionStatus"
+                    className="form-select"
+                    defaultValue=""
+                  >
+                    <option value="">Select Status</option>
                     <option>Not Contacted</option>
                     <option>Discussion Done</option>
                     <option>Interested</option>
@@ -186,42 +271,54 @@ export const NewRythu = () => {
                     <option>Follow-up Required</option>
                   </select>
                 </div>
+
                 <div className="col-md-3">
                   <label className="form-label">Transportation</label>
-                  <select className="form-select" defaultValue="Not Contacted">
+                  <select
+                    name="transportation"
+                    className="form-select"
+                    defaultValue=""
+                  >
+                    <option value="">Select Transportation</option>
                     <option>Navatha</option>
                     <option>Cargo</option>
                     <option>RTC</option>
                     <option>Others</option>
-                    
-                    
                   </select>
                 </div>
-                 <div className="col-md-3">
+
+                <div className="col-md-3">
                   <label className="form-label">Payment Status</label>
-                  <select className="form-select" defaultValue="Not Contacted">
+                  <select
+                    name="paymentStatus"
+                    className="form-select"
+                    defaultValue=""
+                  >
+                    <option value="">Select Payment Status</option>
                     <option>Yes</option>
                     <option>No</option>
-                 
-                    
-                    
                   </select>
                 </div>
+
                 <div className="col-md-3">
                   <label className="form-label">Next Follow-up Date</label>
-                  <input type="date" className="form-control" />
+                  <input
+                    name="nextFollowUpDate"
+                    type="date"
+                    className="form-control"
+                  />
                 </div>
 
                 <div className="col-12">
                   <label className="form-label">Remarks</label>
                   <textarea
+                    name="remarks"
                     className="form-control"
                     rows="3"
                     placeholder="Enter discussion details"
                   ></textarea>
                 </div>
               </div>
-
             </div>
 
             <div className="modal-footer">
@@ -229,21 +326,29 @@ export const NewRythu = () => {
                 type="button"
                 className="btn btn-outline-secondary"
                 data-bs-dismiss="modal"
+                disabled={loading}
               >
                 Cancel
               </button>
 
-              <button type="reset" className="btn btn-light border">
+              <button
+                type="reset"
+                className="btn btn-light border"
+                disabled={loading}
+              >
                 Clear
               </button>
 
-              <button type="submit" className="btn btn-success">
+              <button
+                type="submit"
+                className="btn btn-success"
+                disabled={loading}
+              >
                 <i className="bi bi-check-circle me-2"></i>
-                Save Rythu
+                {loading ? "Saving..." : "Save Rythu"}
               </button>
             </div>
           </form>
-
         </div>
       </div>
     </div>
