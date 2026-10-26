@@ -171,9 +171,7 @@ export const ThisMonthRythuluTable = () => {
   }, []);
 
   // All records lo unna fields ni dynamic ga table columns ga chupistundi.
-  const columns = Array.from(
-    new Set(rythulu.flatMap((farmer) => Object.keys(farmer)))
-  ).filter((key) => key !== "id");
+
 
   const filteredFarmers = rythulu.filter((farmer) => {
     const text = search.toLowerCase().trim();
@@ -364,75 +362,114 @@ export const ThisMonthRythuluTable = () => {
                 <strong>{rythulu.length}</strong> farmers
               </p>
 
-              <div className="table-responsive">
-                <table className="table table-bordered table-hover align-middle">
-                  <thead className="table-light">
-                    <tr>
-                      <th>S.No</th>
+              
+<div className="table-responsive">
+  <table className="table table-bordered table-hover align-middle text-nowrap">
+    <thead className="table-light">
+      <tr>
+        <th>S.No</th>
+        <th>Rythu Name</th>
+        <th>Farm Name</th>
+        <th>Acres</th>
+        <th>1 Litre Bottles</th>
+        <th>Bottle Amount</th>
+        <th>Kits</th>
+        <th>Kit Amount</th>
+        <th>Total Amount</th>
+        <th>Discount</th>
+        <th>Final Amount</th>
+        <th>Mobile</th>
+        <th>Alternate Mobile</th>
+        <th>Order Date</th>
+        <th>Village</th>
+        <th>Mandal</th>
+        <th>District</th>
+        <th>State</th>
+        <th>PIN Code</th>
+        <th>Full Address</th>
+        <th>Discussion Status</th>
+        <th>Transportation</th>
+        <th>Payment Status</th>
+        <th>Next Follow-up</th>
+        <th>Remarks</th>
+        <th style={{ minWidth: "170px" }}>Actions</th>
+      </tr>
+    </thead>
 
-                      {columns.map((key) => (
-                        <th key={key} className="text-nowrap">
-                          {fieldLabel(key)}
-                        </th>
-                      ))}
+    <tbody>
+      {filteredFarmers.length > 0 ? (
+        filteredFarmers.map((farmer, index) => (
+          <tr key={farmer.id}>
+            <td>{index + 1}</td>
+            <td>{farmer.rythuName || "-"}</td>
+            <td>{farmer.farmName || "-"}</td>
+            <td>{farmer.acres ?? "-"}</td>
+            <td>{farmer.bottles ?? "-"}</td>
+            <td>₹{farmer.bottleAmount ?? 0}</td>
+            <td>{farmer.kits || "-"}</td>
+            <td>₹{farmer.kitAmount ?? 0}</td>
+            <td>₹{farmer.totalAmount ?? 0}</td>
+            <td>₹{farmer.discount ?? 0}</td>
+            <td className="fw-bold text-success">
+              ₹{farmer.finalAmount ?? 0}
+            </td>
+            <td>{farmer.mobile || "-"}</td>
+            <td>{farmer.alternateMobile || "-"}</td>
+            <td>{formatValue(farmer.orderReceivedDate)}</td>
+            <td>{farmer.village || "-"}</td>
+            <td>{farmer.mandal || "-"}</td>
+            <td>{farmer.district || "-"}</td>
+            <td>{farmer.state || "-"}</td>
+            <td>{farmer.pinCode || "-"}</td>
+            <td
+              className="text-wrap"
+              style={{ minWidth: "200px", maxWidth: "300px" }}
+            >
+              {farmer.fullAddress || "-"}
+            </td>
+            <td>{farmer.discussionStatus || "-"}</td>
+            <td>{farmer.transportation || "-"}</td>
+            <td>{farmer.paymentStatus || "-"}</td>
+            <td>{formatValue(farmer.nextFollowUpDate)}</td>
+            <td
+              className="text-wrap"
+              style={{ minWidth: "150px", maxWidth: "250px" }}
+            >
+              {farmer.remarks || "-"}
+            </td>
 
-                      <th className="text-center">Actions</th>
-                    </tr>
-                  </thead>
+            <td className="text-nowrap">
+              <button
+                type="button"
+                className="btn btn-sm btn-primary me-2"
+                onClick={() => handleEdit(farmer)}
+              >
+                <i className="bi bi-pencil-square me-1"></i>
+                Edit
+              </button>
 
-                  <tbody>
-                    {filteredFarmers.length > 0 ? (
-                      filteredFarmers.map((farmer, index) => (
-                        <tr key={farmer.id}>
-                          <td>{index + 1}</td>
-
-                          {columns.map((key) => (
-                            <td key={key} className="text-nowrap">
-                              {formatValue(farmer[key])}
-                            </td>
-                          ))}
-
-                          <td className="text-nowrap text-center">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-primary me-2 mb-1"
-                              onClick={() => handleEdit(farmer)}
-                            >
-                              <i className="bi bi-pencil-square me-1"></i>
-                              Edit
-                            </button>
-
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-danger mb-1"
-                              onClick={() => handleDelete(farmer)}
-                              disabled={deletingId === farmer.id}
-                            >
-                              {deletingId === farmer.id ? (
-                                "Deleting..."
-                              ) : (
-                                <>
-                                  <i className="bi bi-trash me-1"></i>
-                                  Delete
-                                </>
-                              )}
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={columns.length + 2}
-                          className="text-center py-4"
-                        >
-                          No farmers found for this month.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-danger"
+                onClick={() => handleDelete(farmer)}
+                disabled={deletingId === farmer.id}
+              >
+                <i className="bi bi-trash me-1"></i>
+                {deletingId === farmer.id ? "Deleting..." : "Delete"}
+              </button>
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan={26} className="text-center py-4">
+            No farmers found for this month.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
             </>
           )}
         </div>
