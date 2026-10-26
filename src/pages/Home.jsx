@@ -3,37 +3,81 @@ import React, { useState, useEffect } from "react";
 import { NewRythu } from "../components/NewRythu";
 import { RythuluTable } from "../components/RythuluTable";
 import { db } from "../firebase/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs,Timestamp  } from "firebase/firestore";
 
 export const Home = () => {
   const [rythulu, setRythulu] = useState([]);
-  const [showRythuluTable, setShowRythuluTable] = useState(false);
+const [showRythuluTable, setShowRythuluTable] = useState(false);
+const [thisMonthRythulu, setThisMonthRythulu] = useState(0);
 
-  // Firebase nunchi farmers fetch cheyyadam
-  const fetchRythulu = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "rythulu"));
+// Firebase nunchi farmers fetch cheyyadam
+const fetchRythulu = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, "rythulu"));
 
-      const farmers = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const farmers = snapshot.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+    }));
 
-      setRythulu(farmers);
-    } catch (error) {
-      console.error("Farmers fetch error:", error);
-    }
-  };
+    setRythulu(farmers);
 
-  // Page load / refresh ayinappudu fetch avutundi
-  useEffect(() => {
-    fetchRythulu();
-  }, []);
+    const now = new Date();
 
-  // New farmer save ayyaka count refresh
-  const handleSaveRythu = () => {
-    fetchRythulu();
-  };
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const currentMonthFarmers = farmers.filter((farmer) => {
+      const rawDate = farmer.orderReceivedDate;
+
+      if (!rawDate) return false;
+
+      let farmerDate;
+
+      if (typeof rawDate.toDate === "function") {
+        farmerDate = rawDate.toDate();
+      } else if (rawDate instanceof Date) {
+        farmerDate = rawDate;
+      } else if (typeof rawDate === "string") {
+        // YYYY-MM-DD ni local date ga convert cheyyadam
+        const match = rawDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+        if (match) {
+          farmerDate = new Date(
+            Number(match[1]),
+            Number(match[2]) - 1,
+            Number(match[3])
+          );
+        } else {
+          farmerDate = new Date(rawDate);
+        }
+      } else {
+        return false;
+      }
+
+      if (Number.isNaN(farmerDate.getTime())) return false;
+
+      return (
+        farmerDate.getMonth() === currentMonth &&
+        farmerDate.getFullYear() === currentYear
+      );
+    });
+
+    setThisMonthRythulu(currentMonthFarmers.length);
+  } catch (error) {
+    console.error("Farmers fetch error:", error);
+  }
+};
+
+// Page load / refresh ayinappudu
+useEffect(() => {
+  fetchRythulu();
+}, []);
+
+// New farmer save ayyaka count refresh
+const handleSaveRythu = () => {
+  fetchRythulu();
+};
 
   return (
     <div className="container dashboard">
@@ -94,17 +138,24 @@ export const Home = () => {
 
         {/* 2. New Rythulu */}
         <div className="col-12 col-sm-6 col-xl-4">
-          <div className="stat-card card-blue">
+         <div
+            className="stat-card card-blue"
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+                window.location.href = "/this-month-rythulu";
+            }}
+            >
             <div className="d-flex justify-content-between">
               <div className="stat-icon">
                 <i className="bi bi-person-plus-fill"></i>
               </div>
               <i className="bi bi-arrow-up-right fs-5"></i>
             </div>
-            <div className="stat-number">42</div>
-            <div className="stat-title">New Rythulu</div>
+            <div className="stat-number">{thisMonthRythulu}</div>
+            <div className="stat-title">This Month Rythulu</div>
             <div className="stat-description">
-              Recently registered farmers
+              this month registered farmers
             </div>
             <div className="stat-footer">
               <span>View new farmers</span>

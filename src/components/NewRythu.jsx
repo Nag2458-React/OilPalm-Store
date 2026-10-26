@@ -1,38 +1,83 @@
+
 import React, { useState } from "react";
 import { db } from "../firebase/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
 
-export const NewRythu = ({onSaveRythu}) => {
-    const [loading, setLoading] = useState(false);
+export const NewRythu = ({ onSaveRythu }) => {
+  const [loading, setLoading] = useState(false);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  // Product selection states
+  const [bottles, setBottles] = useState("");
+  const [kits, setKits] = useState("");
+  const [discount, setDiscount] = useState("0");
 
-  const form = e.currentTarget;
-  const data = Object.fromEntries(new FormData(form).entries());
+  // Product prices
+  const BOTTLE_PRICE = 750;
+  const KIT_PRICE = 1850;
 
-  try {
-    setLoading(true);
+  // Calculate selected quantities
+  const bottleCount = Number(bottles) || 0;
+  const kitCount = Number.parseInt(kits, 10) || 0;
 
-    await addDoc(collection(db, "rythulu"), data);
+  // Automatic amount calculation
+  const bottleAmount = bottleCount * BOTTLE_PRICE;
+  const kitAmount = kitCount * KIT_PRICE;
 
-    alert("Rythu data saved successfully!");
+  const totalAmount = bottleAmount + kitAmount;
 
-    form.reset();
+  const discountAmount = Math.min(
+    Math.max(Number(discount) || 0, 0),
+    totalAmount
+  );
 
-    const modalElement = document.getElementById("newFarmerModal");
-    window.bootstrap?.Modal.getInstance(modalElement)?.hide();
+  const finalAmount = totalAmount - discountAmount;
 
-    onSaveRythu?.();
-  } catch (error) {
-    console.error("Firebase error:", error);
-    alert("Save failed: " + error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  // Save farmer details to Firestore
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    try {
+      setLoading(true);
+
+      await addDoc(collection(db, "rythulu"), {
+        ...data,
+        bottles: bottles,
+        kits: kits,
+        bottlePrice: BOTTLE_PRICE,
+        kitPrice: KIT_PRICE,
+        bottleAmount: bottleAmount,
+        kitAmount: kitAmount,
+        totalAmount: totalAmount,
+        discount: discountAmount,
+        finalAmount: finalAmount,
+        createdAt: Timestamp.now(),
+      });
+
+      alert("Rythu data saved successfully!");
+
+      form.reset();
+
+      setBottles("");
+      setKits("");
+      setDiscount("0");
+
+      const modalElement = document.getElementById("newFarmerModal");
+      window.bootstrap?.Modal.getInstance(modalElement)?.hide();
+
+      onSaveRythu?.();
+    } catch (error) {
+      console.error("Firebase error:", error);
+      alert("Save failed: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-     <div
+    <div
       className="modal fade"
       id="newFarmerModal"
       tabIndex="-1"
@@ -41,6 +86,8 @@ const handleSubmit = async (e) => {
     >
       <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div className="modal-content">
+
+          {/* Header */}
           <div className="modal-header bg-success text-white">
             <div>
               <h5 className="modal-title" id="newFarmerModalLabel">
@@ -60,6 +107,8 @@ const handleSubmit = async (e) => {
 
           <form onSubmit={handleSubmit}>
             <div className="modal-body p-4">
+
+              {/* Personal Details */}
               <h6 className="text-success fw-bold mb-3">
                 <i className="bi bi-person-fill me-2"></i>
                 Personal Details
@@ -83,7 +132,7 @@ const handleSubmit = async (e) => {
                     name="farmName"
                     type="text"
                     className="form-control"
-                    placeholder="Enter name"
+                    placeholder="Enter farm name"
                     required
                   />
                 </div>
@@ -100,38 +149,141 @@ const handleSubmit = async (e) => {
                     required
                   />
                 </div>
-                
+
+                {/* Product Quantities */}
                 <div className="col-md-6">
-                  <label className="form-label">How Many 1 Littre Bottles</label>
+                  <label className="form-label">
+                    How Many 1 Litre Bottles
+                  </label>
+
                   <select
                     name="bottles"
                     className="form-select"
-                    defaultValue=""
+                    value={bottles}
+                    onChange={(e) => setBottles(e.target.value)}
                   >
                     <option value="">Select Bottles</option>
-                    <option>1</option>
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                    <option>5</option>
+                    <option value="1">1 Bottle</option>
+                    <option value="2">2 Bottles</option>
+                    <option value="3">3 Bottles</option>
+                    <option value="4">4 Bottles</option>
+                    <option value="5">5 Bottles</option>
                   </select>
+
+                  <small className="text-muted">
+                    Price per bottle: ₹{BOTTLE_PRICE.toLocaleString("en-IN")}
+                  </small>
                 </div>
-                
+
                 <div className="col-md-6">
                   <label className="form-label">How Many Kits</label>
+
                   <select
                     name="kits"
                     className="form-select"
-                    defaultValue=""
+                    value={kits}
+                    onChange={(e) => setKits(e.target.value)}
                   >
-                    <option value="">Select state</option>
-                    <option>1 kIT</option>
-                    <option>2 KITS</option>
-                    <option>3 KITS</option>
-                    <option>4 KITS</option>
-                    <option>5 KITS</option>
+                    <option value="">Select Kits</option>
+                    <option value="1 KIT">1 KIT</option>
+                    <option value="2 KITS">2 KITS</option>
+                    <option value="3 KITS">3 KITS</option>
+                    <option value="4 KITS">4 KITS</option>
+                    <option value="5 KITS">5 KITS</option>
                   </select>
+
+                  <small className="text-muted">
+                    Price per kit: ₹{KIT_PRICE.toLocaleString("en-IN")}
+                  </small>
                 </div>
+
+                {/* Amount Calculation Section */}
+                <div className="col-12">
+                  <div className="p-3 p-md-4 rounded-3 border bg-light">
+                    <h6 className="text-success fw-bold mb-3">
+                      <i className="bi bi-calculator me-2"></i>
+                      Product Amount Details
+                    </h6>
+
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label">
+                          Bottle Amount (₹)
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={bottleAmount.toLocaleString("en-IN")}
+                          readOnly
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label">
+                          Kit Amount (₹)
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={kitAmount.toLocaleString("en-IN")}
+                          readOnly
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Total Amount (₹)
+                        </label>
+                        <input
+                          type="number"
+                          name="totalAmount"
+                          className="form-control fw-bold"
+                          value={totalAmount}
+                          readOnly
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Discount Amount (₹)
+                        </label>
+                        <input
+                          type="number"
+                          name="discount"
+                          className="form-control"
+                          min="0"
+                          max={totalAmount}
+                          step="1"
+                          value={discount}
+                          onChange={(e) => setDiscount(e.target.value)}
+                        />
+                        <small className="text-muted">
+                          Admin can enter a discount up to the total amount.
+                        </small>
+                      </div>
+
+                      <div className="col-12">
+                        <div className="p-3 rounded-3 bg-success text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                          <div>
+                            <div className="small">Final Payable Amount</div>
+                            <div className="fs-4 fw-bold">
+                              ₹{finalAmount.toLocaleString("en-IN")}
+                            </div>
+                          </div>
+
+                          <i className="bi bi-cash-coin fs-1"></i>
+
+                          <input
+                            type="hidden"
+                            name="finalAmount"
+                            value={finalAmount}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="col-md-4">
                   <label className="form-label">Mobile Number *</label>
                   <input
@@ -170,6 +322,7 @@ const handleSubmit = async (e) => {
 
               <hr className="my-4" />
 
+              {/* Address Details */}
               <h6 className="text-success fw-bold mb-3">
                 <i className="bi bi-geo-alt-fill me-2"></i>
                 Address Details
@@ -250,6 +403,7 @@ const handleSubmit = async (e) => {
 
               <hr className="my-4" />
 
+              {/* Discussion Details */}
               <h6 className="text-success fw-bold mb-3">
                 <i className="bi bi-chat-dots-fill me-2"></i>
                 Discussion Details
@@ -321,6 +475,7 @@ const handleSubmit = async (e) => {
               </div>
             </div>
 
+            {/* Footer */}
             <div className="modal-footer">
               <button
                 type="button"
@@ -335,6 +490,11 @@ const handleSubmit = async (e) => {
                 type="reset"
                 className="btn btn-light border"
                 disabled={loading}
+                onClick={() => {
+                  setBottles("");
+                  setKits("");
+                  setDiscount("0");
+                }}
               >
                 Clear
               </button>
@@ -354,3 +514,4 @@ const handleSubmit = async (e) => {
     </div>
   );
 };
+
