@@ -365,7 +365,7 @@ export const ThisMonthRythuluTable = () => {
               
 <div className="table-responsive">
   <table className="table table-bordered table-hover align-middle text-nowrap">
-    <thead className="table-light">
+    <thead className="table-success">
       <tr>
         <th>S.No</th>
         <th>Rythu Name</th>

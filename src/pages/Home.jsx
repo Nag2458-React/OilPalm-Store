@@ -1,16 +1,21 @@
 
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { NewRythu } from "../components/NewRythu";
 import { RythuluTable } from "../components/RythuluTable";
 import { db } from "../firebase/firebase";
-import { collection, getDocs,Timestamp  } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 export const Home = () => {
-  const [rythulu, setRythulu] = useState([]);
+const [rythulu, setRythulu] = useState([]);
 const [showRythuluTable, setShowRythuluTable] = useState(false);
 const [thisMonthRythulu, setThisMonthRythulu] = useState(0);
-
+const [thisMonthPurchasedRythulu, setThisMonthPurchasedRythulu] = useState(0);
+const [thisMonthEarnings, setThisMonthEarnings] = useState(0);
+const [overallTotalEarnings, setOverallTotalEarnings] = useState(0);
 // Firebase nunchi farmers fetch cheyyadam
+
+
 const fetchRythulu = async () => {
   try {
     const snapshot = await getDocs(collection(db, "rythulu"));
@@ -23,58 +28,115 @@ const fetchRythulu = async () => {
     setRythulu(farmers);
 
     const now = new Date();
+    const monthStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    );
+    const nextMonthStart = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      1
+    );
 
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const getDate = (value) => {
+      if (!value) return null;
 
-    const currentMonthFarmers = farmers.filter((farmer) => {
-      const rawDate = farmer.orderReceivedDate;
-
-      if (!rawDate) return false;
-
-      let farmerDate;
-
-      if (typeof rawDate.toDate === "function") {
-        farmerDate = rawDate.toDate();
-      } else if (rawDate instanceof Date) {
-        farmerDate = rawDate;
-      } else if (typeof rawDate === "string") {
-        // YYYY-MM-DD ni local date ga convert cheyyadam
-        const match = rawDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-
-        if (match) {
-          farmerDate = new Date(
-            Number(match[1]),
-            Number(match[2]) - 1,
-            Number(match[3])
-          );
-        } else {
-          farmerDate = new Date(rawDate);
-        }
-      } else {
-        return false;
+      if (typeof value.toDate === "function") {
+        return value.toDate();
       }
 
-      if (Number.isNaN(farmerDate.getTime())) return false;
+      if (value instanceof Date) {
+        return value;
+      }
+
+      if (typeof value === "string") {
+        const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+        const date = match
+          ? new Date(
+              Number(match[1]),
+              Number(match[2]) - 1,
+              Number(match[3])
+            )
+          : new Date(value);
+
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      if (typeof value === "object" && value.seconds != null) {
+        return new Date(value.seconds * 1000);
+      }
+
+      if (typeof value === "number") {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      return null;
+    };
+
+    // ఈ నెలలో order వచ్చిన రైతులు
+    const currentMonthFarmers = farmers.filter((farmer) => {
+      const date = getDate(farmer.orderReceivedDate);
 
       return (
-        farmerDate.getMonth() === currentMonth &&
-        farmerDate.getFullYear() === currentYear
+        date &&
+        date >= monthStart &&
+        date < nextMonthStart
       );
     });
 
+    // ఈ నెలలో payment complete అయిన రైతులు
+    const purchasedFarmers = currentMonthFarmers.filter(
+      (farmer) =>
+        String(farmer.paymentStatus ?? "")
+          .trim()
+          .toLowerCase() === "yes"
+    );
+
+    // Earnings calculation
+    const earnings = purchasedFarmers.reduce((total, farmer) => {
+      const amount = Number(
+        farmer.finalAmount ?? farmer.totalAmount ?? 0
+      );
+
+      return total + (Number.isFinite(amount) ? amount : 0);
+    }, 0);
+    const paidFarmers = farmers.filter(
+  (farmer) =>
+    String(farmer.paymentStatus ?? "")
+      .trim()
+      .toLowerCase() === "yes"
+);
+
+const totalEarnings = paidFarmers.reduce((total, farmer) => {
+  const amount = Number(
+    farmer.finalAmount ?? farmer.totalAmount ?? 0
+  );
+
+  return total + (Number.isFinite(amount) ? amount : 0);
+}, 0);
+
+
     setThisMonthRythulu(currentMonthFarmers.length);
+    setThisMonthPurchasedRythulu(purchasedFarmers.length);
+    setThisMonthEarnings(earnings);
+    setOverallTotalEarnings(totalEarnings);
+    console.log("All farmers:", farmers.length);
+    console.log("This month farmers:", currentMonthFarmers.length);
+    console.log("This month purchased farmers:", purchasedFarmers.length);
+    console.log("This month earnings:", earnings);
   } catch (error) {
     console.error("Farmers fetch error:", error);
+    alert("Farmers load cheyyadam lo error vachindi.");
   }
 };
 
-// Page load / refresh ayinappudu
 useEffect(() => {
   fetchRythulu();
 }, []);
 
-// New farmer save ayyaka count refresh
 const handleSaveRythu = () => {
   fetchRythulu();
 };
@@ -158,74 +220,130 @@ const handleSaveRythu = () => {
               this month registered farmers
             </div>
             <div className="stat-footer">
-              <span>View new farmers</span>
+              <span>View This Month Farmers</span>
               <i className="bi bi-arrow-right"></i>
             </div>
           </div>
         </div>
 
         {/* 3. Purchase Chesina Rythulu */}
-        <div className="col-12 col-sm-6 col-xl-4">
-          <div className="stat-card card-orange">
-            <div className="d-flex justify-content-between">
-              <div className="stat-icon">
-                <i className="bi bi-bag-check-fill"></i>
-              </div>
-              <i className="bi bi-arrow-up-right fs-5"></i>
-            </div>
-            <div className="stat-number">126</div>
-            <div className="stat-title">Purchase Chesina Rythulu</div>
-            <div className="stat-description">
-              Farmers who purchased products
-            </div>
-            <div className="stat-footer">
-              <span>View purchase details</span>
-              <i className="bi bi-arrow-right"></i>
-            </div>
-          </div>
+        
+<div className="col-12 col-sm-6 col-xl-4">
+  <Link
+    to="/this-month-purchased-rythulu"
+    className="text-decoration-none text-reset d-block h-100"
+  >
+    <div
+      className="stat-card card-orange h-100"
+      role="link"
+      style={{ cursor: "pointer" }}
+    >
+      <div className="d-flex justify-content-between">
+        <div className="stat-icon">
+          <i className="bi bi-bag-check-fill"></i>
         </div>
 
-        {/* 4. Discussions */}
-        <div className="col-12 col-sm-6 col-xl-4">
-          <div className="stat-card card-purple">
-            <div className="d-flex justify-content-between">
-              <div className="stat-icon">
-                <i className="bi bi-chat-dots-fill"></i>
-              </div>
-              <i className="bi bi-arrow-up-right fs-5"></i>
-            </div>
-            <div className="stat-number">64</div>
-            <div className="stat-title">Discussion Chesina Vallu</div>
-            <div className="stat-description">
-              Farmers contacted or discussed
-            </div>
-            <div className="stat-footer">
-              <span>View discussions</span>
-              <i className="bi bi-arrow-right"></i>
-            </div>
-          </div>
+        <i className="bi bi-arrow-up-right fs-5"></i>
+      </div>
+
+      <div className="stat-number">{thisMonthPurchasedRythulu}</div>
+
+      <div className="stat-title">
+        This Month Purchased Rythulu
+      </div>
+
+      <div className="stat-description">
+        Farmers with Payment Status Yes
+      </div>
+
+      <div className="stat-footer">
+        <span>View purchase details</span>
+        <i className="bi bi-arrow-right"></i>
+      </div>
+    </div>
+  </Link>
+</div>
+
+        {/* 4. Total Earnings */}
+       <div className="col-12 col-sm-6 col-xl-4">
+  <Link
+    to="/this-month-total-earnings"
+    className="text-decoration-none"
+    style={{ color: "inherit" }}
+  >
+    <div
+      className="stat-card card-purple"
+      role="button"
+      style={{ cursor: "pointer" }}
+    >
+      <div className="d-flex justify-content-between">
+        <div className="stat-icon">
+          <i className="bi bi-currency-rupee"></i>
         </div>
+
+        <i className="bi bi-arrow-up-right fs-5"></i>
+      </div>
+
+      <div className="stat-number">
+        ₹{thisMonthEarnings.toLocaleString("en-IN")}
+      </div>
+
+      <div className="stat-title">
+        This Month Total Earnings
+      </div>
+
+      <div className="stat-description">
+        Total Products Sales Amount
+      </div>
+
+      <div className="stat-footer">
+        <span>View Sales</span>
+        <i className="bi bi-arrow-right"></i>
+      </div>
+    </div>
+  </Link>
+</div>
 
         {/* 5. Follow-up Pending */}
-        <div className="col-12 col-sm-6 col-xl-4">
-          <div className="stat-card card-red">
-            <div className="d-flex justify-content-between">
-              <div className="stat-icon">
-                <i className="bi bi-clock-history"></i>
-              </div>
-              <i className="bi bi-arrow-up-right fs-5"></i>
-            </div>
-            <div className="stat-number">38</div>
-            <div className="stat-title">Follow-up Pending</div>
-            <div className="stat-description">
-              Farmers to contact again
-            </div>
-            <div className="stat-footer">
-              <span>View pending follow-ups</span>
-              <i className="bi bi-arrow-right"></i>
-            </div>
-          </div>
+        
+<div className="col-12 col-sm-6 col-xl-4">
+  <Link
+    to="/overall-total-earnings"
+    className="text-decoration-none"
+    style={{ color: "inherit" }}
+  >
+    <div
+      className="stat-card card-red"
+      role="button"
+      style={{ cursor: "pointer" }}
+    >
+      <div className="d-flex justify-content-between">
+        <div className="stat-icon">
+          <i className="bi bi-currency-rupee"></i>
         </div>
+
+        <i className="bi bi-arrow-up-right fs-5"></i>
+      </div>
+
+      <div className="stat-number">
+        ₹{overallTotalEarnings.toLocaleString("en-IN")}
+      </div>
+
+      <div className="stat-title">
+        Overall Total Earnings
+      </div>
+
+      <div className="stat-description">
+        Total sales amount from all paid orders
+      </div>
+
+      <div className="stat-footer">
+        <span>View All Sales</span>
+        <i className="bi bi-arrow-right"></i>
+      </div>
+    </div>
+  </Link>
+</div>
 
         {/* 6. Interested Rythulu */}
         <div className="col-12 col-sm-6 col-xl-4">
